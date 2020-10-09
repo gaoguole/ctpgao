@@ -1,4 +1,4 @@
-from sdk.gaoapi import GaoApi
+from sdk.gaoapi2 import GaoApi
 print(1)
 api=GaoApi("086515","123456")
 print(2)
