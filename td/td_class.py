@@ -8,6 +8,7 @@ import numpy
 import whfunc
 import websockets
 import traceback
+from tqsdk.tafunc import time_to_str
 from 交易依赖类 import CTradeSpi,order_insert,order_close,ReqQryTradingAccount,ReqQryInvestorPosition
 web_CTP={}
 async def 交易后端连接(websocket, path):
@@ -121,31 +122,39 @@ async def 启动程序(账户data):
     global CTP用户名对应实例和登陆名,myqueue
     CTP用户名对应实例和登陆名={}
     myqueue=janus.Queue()
-    #每个CTP账户实例遍历
-    for x in 账户data:
-        if 账户data[x] is None:
-            账户data[x]=[list(x[1:3])+[0]]
+    while True:
+        #每个CTP账户实例遍历,建立spi和api实例
+        for x in 账户data:
+            if 账户data[x] is None:
+                账户data[x]=[list(x[1:3])+[0]]
 
-        #登陆交易实例
-        tradeapi=api.CThostFtdcTraderApi_CreateFtdcTraderApi()
-        BROKERID,USERID,PASSWORD,AppID,AuthCode,FrontAddr=x
-        tradespi=CTradeSpi(tradeapi,BROKERID,USERID,PASSWORD,AppID,AuthCode,myqueue.sync_q)
-        tradeapi.RegisterFront(FrontAddr)
-        tradeapi.RegisterSpi(tradespi)
-        tradeapi.SubscribePrivateTopic(api.THOST_TERT_RESTART)
-        tradeapi.SubscribePublicTopic(api.THOST_TERT_RESTART)
-        tradeapi.Init()
+            #登陆交易实例
+            tradeapi=api.CThostFtdcTraderApi_CreateFtdcTraderApi()
+            BROKERID,USERID,PASSWORD,AppID,AuthCode,FrontAddr=x
+            tradespi=CTradeSpi(tradeapi,BROKERID,USERID,PASSWORD,AppID,AuthCode,myqueue.sync_q)
+            tradeapi.RegisterFront(FrontAddr)
+            tradeapi.RegisterSpi(tradespi)
+            tradeapi.SubscribePrivateTopic(api.THOST_TERT_RESTART)
+            tradeapi.SubscribePublicTopic(api.THOST_TERT_RESTART)
+            tradeapi.Init()
+            while True:
+                if tradespi.init_start is None:
+                    time.sleep(1)
+                else:
+                    break
+
+
+            CTP用户名对应实例和登陆名[x[1]]={"td_obj":tradespi,'td_user_pass':账户data[x],"td_websockets":[],"td_api":tradeapi}
+        print(CTP用户名对应实例和登陆名)
+        await asyncio.sleep(100)
+        #进行无限延迟,到达重连时间,去释放原来的api
         while True:
-            if tradespi.init_start is None:
-                time.sleep(1)
-            else:
+            await asyncio.sleep(10)
+            if time_to_str(time.time())[11:16] in ("08:35","20:35"):
+                for x in 账户data:
+                    CTP用户名对应实例和登陆名[x[1]]["td_api"].Release()
                 break
 
-
-        CTP用户名对应实例和登陆名[x[1]]={"td_obj":tradespi,'td_user_pass':账户data[x],"td_websockets":[]}
-    print(CTP用户名对应实例和登陆名)
-    while True:
-        await asyncio.sleep(1000)
 
 def 启动交易账户登录(账户data,绑定通信地址="localhost",绑定通信端口=8765):
     global loop,myqueue
