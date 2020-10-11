@@ -412,6 +412,9 @@ class  GaoApi(object):
                     if x=="msg":
                         print(a["msg"])
                     if x=="order":
+                        if not a[x]:
+                            self.order.clear()
+                            continue
                         for y in a[x]:
                             if y not in self.order:
                                 self.order[y]=MyDict(a[x][y])
@@ -419,12 +422,14 @@ class  GaoApi(object):
                                 self.order[y].update(a[x][y])
                         # self.order.update(a[x])
                     if x=="trade":
+                        if not a[x]:
+                            self.trade.clear()
+                            continue
                         for y in a[x]:
                             if y not in self.trade:
                                 self.trade[y]=MyDict(a[x][y])
                             else:
                                 self.trade[y].update(a[x][y])
-                        # self.trade.update(a[x])
                     if x=="position":
                         for y in a[x]:
                             if y not in self.position:
