@@ -143,8 +143,13 @@ async def 启动程序(账户data):
                 else:
                     break
 
+            if x[1] not in CTP用户名对应实例和登陆名:
+                CTP用户名对应实例和登陆名[x[1]]={"td_obj":tradespi,'td_user_pass':账户data[x],"td_websockets":[],"td_api":tradeapi}
+            else:
+                CTP用户名对应实例和登陆名[x[1]]["td_obj"]=tradespi
+                CTP用户名对应实例和登陆名[x[1]]["td_api"]=tradeapi
 
-            CTP用户名对应实例和登陆名[x[1]]={"td_obj":tradespi,'td_user_pass':账户data[x],"td_websockets":[],"td_api":tradeapi}
+
         print(CTP用户名对应实例和登陆名)
         await asyncio.sleep(100)
         #进行无限延迟,到达重连时间,去释放原来的api
