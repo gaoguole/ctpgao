@@ -12,14 +12,16 @@ import schedule
 
 
 def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redis_con=None,天勤连接=None,通达信连接=None,data_length=2000,行情地址="tcp://101.230.209.178:53313",md_subscription_name="gaoctp"):
-    try:
-        存储tick队列=queue.Queue()
-        if not redis_con:
-            redis_con=redis.Redis(db=15)
+
+    存储tick队列=queue.Queue()
+    if not redis_con:
+        redis_con=redis.Redis(db=15)
+    while True:
 
 
-        if not 天勤连接:
-            天勤连接=tqsdk.TqApi(auth="270829786@qq.com,24729220a")
+
+        天勤连接=tqsdk.TqApi(auth="270829786@qq.com,24729220a")
+
 
         if 行情类型=="TQ":
             单symbol_dict=set()
@@ -65,11 +67,24 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
             try:
                 symbol,UpdateTime, UpdateMillisec, TradingDay,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,\
                     PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,\
-                        BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice=存储tick队列.get(timeout=60)
+                        BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice=存储tick队列.get(timeout=30)
             except:
-                if time_to_str(time.time())[11:13] in ("16","03"):
+                当前时间=time_to_str(time.time())[11:16]
+                if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
+                    continue
+                else:
+                    time.sleep(1)
+                    mduserapi.Release()
+                    print("哥哥我释放了")
                     break
-                continue
+            # if time_to_str(time.time())[11:13] in ("16","03") or time_to_str(time.time())[11:16]=="10:11" :
+            #     mduserapi.Release()
+            #     print("哥哥我释放了2")
+            #     # for x in range(1000):
+            #     #     print(x)
+            #     #     time.sleep(1)
+            #     break 
+
             if 行情类型=="TQ":
                 #处理本条data
                 天勤.updata(单symbol_dict映射[symbol],UpdateTime, UpdateMillisec, TradingDay,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice)
@@ -77,8 +92,6 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
                 #处理主连
                 if 单symbol_dict映射[symbol] in  订阅中的主连合约_反向:
                     天勤.updata(订阅中的主连合约_反向[单symbol_dict映射[symbol]],UpdateTime, UpdateMillisec, TradingDay,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice)
-
-
 
                 #如果处理data后,为空列表,change_i_data
                 if 存储tick队列.empty():
@@ -91,27 +104,21 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
                     else:
                         #print("我错了")
                         pass
-    except:
-        print("行情结束")
+        当前时间=time_to_str(time.time())[11:16]
+        if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
+            print("hahaha")
+            continue
+        else:
+            time.sleep(1)
+        
+
 
 def 启动行情记录(symbol_list,list_duration_seconds,行情类型="TQ",redis_con=None,天勤连接=None,通达信连接=None,data_length=2000,行情地址="tcp://101.230.209.178:53313",md_subscription_name="gaoctp"):
-
-
-    schedule.every().day.at("08:30").do(启动行情记录2,symbol_list,list_duration_seconds,行情类型,redis_con,天勤连接,通达信连接,data_length,行情地址,md_subscription_name)
-    schedule.every().day.at("20:30").do(启动行情记录2,symbol_list,list_duration_seconds,行情类型,redis_con,天勤连接,通达信连接,data_length,行情地址,md_subscription_name)
-    当前时间=time_to_str(time.time())[11:16]
-    if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
-        启动行情记录2(symbol_list,list_duration_seconds,行情类型,redis_con,天勤连接,通达信连接,data_length,行情地址,md_subscription_name)
-
-
     while True:
-
-        # 启动服务
-
-        schedule.run_pending()
-
+        当前时间=time_to_str(time.time())[11:16]
+        if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
+            启动行情记录2(symbol_list,list_duration_seconds,行情类型,redis_con,天勤连接,通达信连接,data_length,行情地址,md_subscription_name)
         time.sleep(1)
-    #mduserapi.Join()
 
 
 
