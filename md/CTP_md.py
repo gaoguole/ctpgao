@@ -104,12 +104,12 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
                     else:
                         #print("我错了")
                         pass
-        当前时间=time_to_str(time.time())[11:16]
-        if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
-            print("hahaha")
-            continue
-        else:
-            time.sleep(1)
+        while True:
+            当前时间=time_to_str(time.time())[11:16]
+            if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
+                break
+            else:
+                time.sleep(1)
         
 
 
