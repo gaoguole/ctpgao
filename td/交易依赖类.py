@@ -6,6 +6,7 @@ import time
 import queue
 import numpy
 import whfunc
+from tqsdk.tafunc import time_to_str
 
 TThostFtdcVolumeConditionType={"1":"ANY","2":"MIN","3":"ALL"}
 TThostFtdcTimeConditionType={'1':"IOC" ,'2':"GFS",'3':"GFD",'4':"GTD",'5':"GTC",'6':"GFA"}
@@ -132,6 +133,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
     #默认第一次启动后回调
     def OnFrontConnected(self) -> "void":
         print ("OnFrontConnected")
+        self.init_start=None
         authfield = api.CThostFtdcReqAuthenticateField()
         authfield.BrokerID=self.BrokerID
         authfield.UserID=self.UserID
@@ -359,6 +361,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 #处理保证金
                 self.position[symbol]["margin_long"]=self.position[symbol]["margin_long_today"]+self.position[symbol]["margin_long_his"]
                 self.position[symbol]["margin_short"]=self.position[symbol]["margin_short_today"]+self.position[symbol]["margin_short_his"]
+                self.position[symbol]["margin"]=self.position[symbol]["margin_long"]+self.position[symbol]["margin_short"]
                 #处理冻结手数
                 self.position[symbol]["volume_long_frozen"]=self.position[symbol]["volume_long_frozen_today"]+self.position[symbol]["volume_long_frozen_his"]
                 self.position[symbol]["volume_short_frozen"]=self.position[symbol]["volume_short_frozen_today"]+self.position[symbol]["volume_short_frozen_his"]
@@ -397,6 +400,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
     def OnRtnOrder(self, pOrder: 'CThostFtdcOrderField') -> "void":
         #print("报单回报")
         #d={ x: getattr(pOrder, x) for x in dir(pOrder) if x[0]!="_"}
+        print(time_to_str(time.time()),"报单成功")
         if  self.init_start is None:
             if pOrder.OrderLocalID not in self.order:
                 self.order[pOrder.OrderLocalID]={
@@ -510,6 +514,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         # print(d)
     def OnRtnTrade(self,pTrade:"CThostFtdcTradeField"):
         d={ x: getattr(pTrade, x) for x in dir(pTrade) if x[0]!="_"}
+        print(time_to_str(time.time()),"交易成功")
         if pTrade.OrderLocalID in self.Localid_md5:
             md5=self.Localid_md5[pTrade.OrderLocalID]
         else:

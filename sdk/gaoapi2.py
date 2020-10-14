@@ -406,6 +406,8 @@ class  GaoApi(object):
             await websocket.send(str({"user":self.user,"password":self.password}))
             while True:
                 a=await websocket.recv()
+                if "逗" in a:
+                    raise Exception("密码错误")
                 a=eval(a.replace("nan","numpy.nan").replace("1.7976931348623157e+308","numpy.nan"))
                 #print(a)
                 for x in a:

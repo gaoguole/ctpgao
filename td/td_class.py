@@ -74,8 +74,6 @@ async def 交易后端连接(websocket, path):
                 print("异常3",recv_str)
 
 
-
-
 async def 发消息(socket,data):
     await socket.send(str(data))
 async def 查询资金(user,n):
@@ -117,7 +115,6 @@ async def 推送交易端消息():
             最近查询时间[data["user"]]=time.time()
             当前状态[data["user"]]="无任务"
 
-
 async def 启动程序(账户data):
     global CTP用户名对应实例和登陆名,myqueue
     CTP用户名对应实例和登陆名={}
@@ -127,7 +124,6 @@ async def 启动程序(账户data):
         for x in 账户data:
             if 账户data[x] is None:
                 账户data[x]=[list(x[1:3])+[0]]
-
             #登陆交易实例
             tradeapi=api.CThostFtdcTraderApi_CreateFtdcTraderApi()
             BROKERID,USERID,PASSWORD,AppID,AuthCode,FrontAddr=x
@@ -148,9 +144,6 @@ async def 启动程序(账户data):
             else:
                 CTP用户名对应实例和登陆名[x[1]]["td_obj"]=tradespi
                 CTP用户名对应实例和登陆名[x[1]]["td_api"]=tradeapi
-
-
-        print(CTP用户名对应实例和登陆名)
         await asyncio.sleep(100)
         #进行无限延迟,到达重连时间,去释放原来的api
         while True:
