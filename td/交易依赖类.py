@@ -128,6 +128,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
 
         self.temp_id=[]
         print(tapi,BrokerID,UserID,PassWord,AppID,AuthCode,all_queue_send)
+        self.temp_closep={}
 
 
     #默认第一次启动后回调
@@ -282,10 +283,19 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 "PositionCost_short_his":0,
                 "margin_short_today":0,
                 "margin_short_his":0,
-                "CloseProfit":0
+                "CloseProfit":0,
                 }
-            #平仓盈亏
-            self.position[symbol]["CloseProfit"]+=pInvestorPosition.CloseProfit
+            # print(pInvestorPosition.Position,pInvestorPosition.TodayPosition)
+            # #平仓盈亏
+            # print(pInvestorPosition.CloseProfit)
+            if symbol not in self.temp_closep:
+                self.temp_closep[symbol]=pInvestorPosition.CloseProfit
+            else:
+                self.temp_closep[symbol]+=pInvestorPosition.CloseProfit
+
+
+
+            #self.position[symbol]["CloseProfit"]=pInvestorPosition.CloseProfit
             #买卖方向
             if pInvestorPosition.PosiDirection=="2":
                 if pInvestorPosition.TodayPosition>0:
@@ -295,12 +305,14 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     self.position[symbol]["volume_long_frozen_today"]=pInvestorPosition.LongFrozen
                     self.position[symbol]["PositionCost_long_today"]=pInvestorPosition.PositionCost
 
+
                 elif pInvestorPosition.Position>pInvestorPosition.TodayPosition:
                     self.position[symbol]["pos_long_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
                     self.position[symbol]["OpenCost_long_his"]=pInvestorPosition.OpenCost
                     self.position[symbol]["margin_long_his"]=pInvestorPosition.UseMargin
                     self.position[symbol]["volume_long_frozen_his"]=pInvestorPosition.LongFrozen
                     self.position[symbol]["PositionCost_long_his"]=pInvestorPosition.PositionCost
+
                 elif pInvestorPosition.Position==pInvestorPosition.TodayPosition :
                     self.position[symbol]["pos_long_today"]=0
                     self.position[symbol]["OpenCost_long_today"]=0
@@ -312,6 +324,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     self.position[symbol]["margin_long_his"]=0
                     self.position[symbol]["volume_long_frozen_his"]=0
                     self.position[symbol]["PositionCost_long_his"]=0
+
             else:
                 if pInvestorPosition.TodayPosition>0:
                     self.position[symbol]["pos_short_today"]=pInvestorPosition.TodayPosition
@@ -319,12 +332,15 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     self.position[symbol]["PositionCost_short_today"]=pInvestorPosition.PositionCost
                     self.position[symbol]["margin_short_today"]=pInvestorPosition.UseMargin
                     self.position[symbol]["volume_short_frozen_today"]=pInvestorPosition.ShortFrozen
+
+
                 elif pInvestorPosition.Position-pInvestorPosition.TodayPosition>0:
                     self.position[symbol]["pos_short_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
                     self.position[symbol]["OpenCost_short_his"]=pInvestorPosition.OpenCost
                     self.position[symbol]["PositionCost_short_his"]=pInvestorPosition.PositionCost
                     self.position[symbol]["margin_short_his"]=pInvestorPosition.UseMargin
                     self.position[symbol]["volume_short_frozen_his"]=pInvestorPosition.ShortFrozen
+
 
                 else:
                     self.position[symbol]["pos_short_today"]=0
@@ -337,6 +353,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     self.position[symbol]["PositionCost_short_his"]=0
                     self.position[symbol]["margin_short_his"]=0
                     self.position[symbol]["volume_short_frozen_his"]=0
+
         if bIsLast:
             for symbol in self.position:
                 #多空仓计算
@@ -367,6 +384,10 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 self.position[symbol]["volume_short_frozen"]=self.position[symbol]["volume_short_frozen_today"]+self.position[symbol]["volume_short_frozen_his"]
                 #净持仓
                 self.position[symbol]["pos"]=self.position[symbol]["pos_long"]-self.position[symbol]["pos_short"]
+                # #平仓盈利处理
+                self.position[symbol]["CloseProfit"]=self.temp_closep[symbol]
+                self.temp_closep[symbol]=0
+
             if self.init_start is None:
             #更新订单的交易所 和 成交价格
                 for x in self.order:

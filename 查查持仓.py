@@ -1,6 +1,6 @@
 from sdk.gaoapi2 import GaoApi
 print(1)
-api=GaoApi("gaoguole","1234567")
+api=GaoApi("040123","123456")
 print(2)
 行情=api.获取_K线("SHFE.rb2101",10)
 api.获取_tick("SHFE.rb2101")
