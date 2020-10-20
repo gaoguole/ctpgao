@@ -117,6 +117,7 @@ class CFtdcMdSpi(mdapi.CThostFtdcMdSpi):
         pDepthMarketData.AskVolume5,
         # ///AveragePrice
         pDepthMarketData.AveragePrice,
+        time_to_str(time.time())
         ]
         self.red.lpush(pDepthMarketData.InstrumentID,','.join( [str(x) for x in l ]))
 
@@ -167,8 +168,8 @@ def 启动():
         #进行线程阻塞
         while True:
             if time_to_str(time.time())[11:16]=="15:30":
-                转存(red)
                 mduserapi.Release()
+                转存(red)
                 while True:
                     time.sleep(10)
                     if time_to_str(time.time())[11:16]=="20:30":

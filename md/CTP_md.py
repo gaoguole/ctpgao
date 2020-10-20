@@ -17,12 +17,7 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
     if not redis_con:
         redis_con=redis.Redis(db=15)
     while True:
-
-
-
         天勤连接=tqsdk.TqApi(auth="270829786@qq.com,24729220a")
-
-
         if 行情类型=="TQ":
             单symbol_dict=set()
             需要订阅的CTPsymbol=[]
