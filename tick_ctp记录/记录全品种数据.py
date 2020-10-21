@@ -175,6 +175,14 @@ def 启动():
                     if time_to_str(time.time())[11:16]=="20:30":
                         break
                 break
+
+            if time_to_str(time.time())[11:16]=="02:35":
+                mduserapi.Release()
+                while True:
+                    time.sleep(10)
+                    if time_to_str(time.time())[11:16]=="08:30":
+                        break
+                break
             time.sleep(10)
 
 if __name__ == "__main__":

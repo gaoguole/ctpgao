@@ -96,6 +96,7 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
                         天勤.change_i_data(订阅中的指数合约)
                         #整体处理后,全部推送
                         天勤.all_push()
+                        print(time_to_str(time.time()),"完成本轮推送")
                     else:
                         #print("我错了")
                         pass
