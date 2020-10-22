@@ -610,10 +610,10 @@ class  GaoApi(object):
                             #self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]
 
                             if 周期:
-                                self._单品行情更新[symbol][x].iloc[-1]["datetime",'id','open',"high","low",'close','volume',"open_oi","close_oi"]=data['k'][周期]
+                                self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][9:].tolist()
                             else:
-                                self._单品行情更新[symbol][x].iloc[-1]["datetime",'last_price','volume',"ask_price1","ask_volume1","bid_price1","bid_volume2"]=data['k'][周期]
-            self.loop.stop()
+                                self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][7:].tolist()
+                self.loop.stop()
         await reader(ch1)
     
     async def 全symbol更新K任务(self):
@@ -639,10 +639,9 @@ class  GaoApi(object):
                                 self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]
                             else:
                                 if 周期:
-                                    self._整体行情更新[y][x].iloc[-1]["datetime",'id','open',"high","low",'close','volume',"open_oi","close_oi"]=data[y]['k'][周期]
+                                    self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][9:].tolist()
                                 else:
-                                    self._整体行情更新[y][x].iloc[-1]["datetime",'last_price','volume',"ask_price1","ask_volume1","bid_price1","bid_volume2"]=data[y]['k'][周期]
-
+                                    self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][7:].tolist()
                 self.loop.stop()
         await reader(ch1)
 
