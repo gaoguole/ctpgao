@@ -1,5 +1,5 @@
 from sdk.gaoapi2 import GaoApi
-from tqsdk.tafunc import time_to_str
+from tqsdk.tafunc import time_to_str,ma
 import time
 api=GaoApi("086515","123456")
 
@@ -9,6 +9,7 @@ print(行情)
 print(行情2.last_price)
 while True:
     print(行情)
+    行情['ma']=ma(行情.close,5)
     #print(time_to_str(行情.datetime.iloc[-1]))
     print(time_to_str(time.time()))
     api.wait_update()

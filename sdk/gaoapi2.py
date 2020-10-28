@@ -605,14 +605,18 @@ class  GaoApi(object):
                         周期=int(x.split("_")[0])
                         if self._单品行情更新[symbol][x].datetime.iloc[-1]!=data['k'][周期][0]:
                             self._单品行情更新[symbol][x].update(self._单品行情更新[symbol][x].shift(-1))
-                            self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]
-                        else:
+                        #     if 周期:
+                        #         self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][9:].tolist()
+                        #     else:
+                        #         self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][9:].tolist()
+
+                        # else:
                             #self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]
 
-                            if 周期:
-                                self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][9:].tolist()
-                            else:
-                                self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][7:].tolist()
+                        if 周期:
+                            self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][9:].tolist()
+                        else:
+                            self._单品行情更新[symbol][x].iloc[-1]=data['k'][周期]+self._单品行情更新[symbol][x].iloc[-1][7:].tolist()
                 self.loop.stop()
         await reader(ch1)
     
@@ -636,12 +640,12 @@ class  GaoApi(object):
                             周期=int(x.split("_")[0])
                             if self._整体行情更新[y][x].datetime.iloc[-1]!=data[y]['k'][周期][0]:
                                 self._整体行情更新[y][x].update(self._整体行情更新[y][x].shift(-1))
-                                self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]
+                                #self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]
+
+                            if 周期:
+                                self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][9:].tolist()
                             else:
-                                if 周期:
-                                    self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][9:].tolist()
-                                else:
-                                    self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][7:].tolist()
+                                self._整体行情更新[y][x].iloc[-1]=data[y]['k'][周期]+self._整体行情更新[y][x].iloc[-1][7:].tolist()
                 self.loop.stop()
         await reader(ch1)
 
