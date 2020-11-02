@@ -1,6 +1,6 @@
 
 import CTP_md
-品种=["SHFE.rb2101","SHFE.rb2009"]
+品种=["DCE.i2101"]
 周期=[10,60]
 
 CTP_md.启动行情记录2(品种,周期)

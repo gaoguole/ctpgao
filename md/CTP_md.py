@@ -81,6 +81,7 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
             #     break 
 
             if 行情类型=="TQ":
+                print(symbol)
                 #处理本条data
                 天勤.updata(单symbol_dict映射[symbol],UpdateTime, UpdateMillisec, TradingDay,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice)
 
@@ -102,7 +103,7 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
                         pass
         while True:
             当前时间=time_to_str(time.time())[11:16]
-            if 当前时间>"20:30" or "00:00"<当前时间<"02:30" or "08:30"<当前时间<"15:30":
+            if 当前时间>"20:30" or "00:00"<=当前时间<"02:30" or "08:30"<当前时间<"15:30":
                 break
             else:
                 time.sleep(1)

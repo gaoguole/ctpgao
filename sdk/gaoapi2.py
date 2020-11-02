@@ -491,10 +491,52 @@ class  GaoApi(object):
         elif 开平方向=="平今":
             开平方向="CloseToday"
         self.insert_order(品种,买卖方向,开平方向,下单量,价格,下单类型)
+    def create_task(self, coro: asyncio.coroutine) -> asyncio.Task:
+        """
+        创建一个task
 
+        一个task就是一个协程，task的调度是在 wait_update 函数中完成的，如果代码从来没有调用 wait_update，则task也得不到执行
+
+        Args:
+            coro (coroutine):  需要创建的协程
+
+        Example::
+
+            # 一个简单的task
+            import asyncio
+            from tqsdk import TqApi, TqAuth
+
+            async def hello():
+                await asyncio.sleep(3)
+                print("hello world")
+
+            api = TqApi(auth=TqAuth("信易账户", "账户密码"))
+            api.create_task(hello())
+            while True:
+                api.wait_update()
+
+            #以上代码将在3秒后输出
+            hello world
+        """
+        task = self.loop.create_task(coro)
+        if asyncio.Task.current_task(loop=self.loop) is None:
+            self.增加任务.add(task)
+            task.add_done_callback(self._on_task_done)
+        return task
     async def close_order(self,md5):
         d={"rq":"order_close", "md5":str(md5),}
         await self.my_websocket.send(str(d))
+    def _on_task_done(self, task):
+        """当由 api 维护的 task 执行完成后取出运行中遇到的例外并停止 ioloop"""
+        try:
+            exception = task.exception()
+            if exception:
+                self._exceptions.append(exception)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self.增加任务.remove(task)
+            self.loop.stop()
     def cancel_order(self, orderid:str) -> None:
         self.增加任务.append(self.close_order(orderid))
     def 撤单(self,订单编号):

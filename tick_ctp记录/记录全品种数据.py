@@ -151,7 +151,13 @@ def 转存(red):
 def 启动():
     while True:
         #获取合约
-        api=tqsdk.TqApi(auth="270829786@qq.com,24729220a")
+        while True:
+            try:
+                api=tqsdk.TqApi(auth="270829786@qq.com,24729220a")
+            except:
+                continue
+            break
+
         合约=api.query_quotes(ins_class="FUTURE",expired=False)
         api.close()
 
