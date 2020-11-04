@@ -573,10 +573,15 @@ class  GaoApi(object):
         if symbol is None:
             return self.position
         else:
+ 
             if symbol in self.position:
+                #print("z")
                 return self.position[symbol]
             else:
-                self.position[symbol]={"exchange_id":symbol.split(".")[0],
+                #print("bz")
+                #MyDict()
+                self.position[symbol]=MyDict()
+                a={"exchange_id":symbol.split(".")[0],
                 "instrument_id":symbol.split(".")[1],
                 'pos_long_his':0,
                 "pos_long_today":0,
@@ -597,7 +602,6 @@ class  GaoApi(object):
                 "margin_long":0,
                 "margin_short":0,
                 'margin':0,
-                #净持仓
                 "pos":0,
                 "pos_long":0,
                 "pos_short":0,
@@ -620,6 +624,7 @@ class  GaoApi(object):
                 "volume_long_frozen":0,
                 "volume_short_frozen":0,
                 }
+                self.position[symbol].update(a)
                 return self.position[symbol]
     def 查持仓(self,品种=None):
         return self.get_position(品种)
