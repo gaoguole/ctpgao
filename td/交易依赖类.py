@@ -267,6 +267,8 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 'margin':0,
                 #净持仓
                 "pos":0,
+                "pos_long":0,
+                "pos_short":0,
                 "volume_long_frozen_today":0,
                 "volume_long_frozen_his":0,
                 "volume_short_frozen_today":0,
@@ -283,7 +285,8 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 "PositionCost_short_his":0,
                 "margin_short_today":0,
                 "margin_short_his":0,
-                "CloseProfit":0,
+                "volume_long_frozen":0,
+                "volume_short_frozen":0,
                 }
             # print(pInvestorPosition.Position,pInvestorPosition.TodayPosition)
             # #平仓盈亏
@@ -719,20 +722,20 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                             if temp_his>pTrade.Volume:
                                 d={ "pos_long_his":self.position[symbol]["pos_long_his"]-pTrade.Volume,
                                 'pos_long':self.position[symbol]["pos_long"]-pTrade.Volume,
-                                "pos":self.position[symbol]["pos"]+pTrade.Volume
+                                "pos":self.position[symbol]["pos"]-pTrade.Volume
                                 }
                             elif temp_his==pTrade.Volume:
                                 d={ "pos_long_his":self.position[symbol]["pos_long_his"]-pTrade.Volume,
                                 'pos_long':self.position[symbol]["pos_long"]-pTrade.Volume,
                                 "open_price_long": self.position[symbol]["open_price_long"]    if self.position[symbol]["pos_long"]-pTrade.Volume >0  else 0,
                                 "position_price_long": self.position[symbol]["position_price_long"]    if self.position[symbol]["pos_long"] -pTrade.Volume>0  else 0,
-                                "pos":self.position[symbol]["pos"]+pTrade.Volume
+                                "pos":self.position[symbol]["pos"]-pTrade.Volume
                                 }
                             elif temp_his<pTrade.Volume:
                                 d={"pos_long_his":0,
                                 "pos_long_today":temp_today-(pTrade.Volume-temp_his),
                                 'pos_long':self.position[symbol]["pos_long"]-pTrade.Volume,
-                                "pos":self.position[symbol]["pos"]+pTrade.Volume,
+                                "pos":self.position[symbol]["pos"]-pTrade.Volume,
                                 "open_price_long": self.position[symbol]["open_price_long"]    if self.position[symbol]["pos_long"]-pTrade.Volume >0  else 0,
                                 "position_price_long": self.position[symbol]["position_price_long"]    if self.position[symbol]["pos_long"] -pTrade.Volume>0  else 0,
                                 }
