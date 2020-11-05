@@ -12,7 +12,7 @@ import schedule
 
 当前交易日="00000000"
 def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redis_con=None,天勤连接=None,通达信连接=None,data_length=2000,行情地址="tcp://101.230.209.178:53313",md_subscription_name="gaoctp"):
-
+    global 当前交易日 
     存储tick队列=queue.Queue()
     if not redis_con:
         redis_con=redis.Redis(db=15)
