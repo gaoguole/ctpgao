@@ -10,7 +10,7 @@ from tqsdk.tafunc import time_to_str
 from tq_md_objs import TQ_md_class,CFtdcMdSpi
 import schedule
 
-
+当前交易日="00000000"
 def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redis_con=None,天勤连接=None,通达信连接=None,data_length=2000,行情地址="tcp://101.230.209.178:53313",md_subscription_name="gaoctp"):
 
     存储tick队列=queue.Queue()
@@ -83,7 +83,10 @@ def 启动行情记录2(symbol_list,list_duration_seconds,行情类型="TQ",redi
             if 行情类型=="TQ":
                 #print(symbol)
                 #处理本条data
-                天勤.updata(单symbol_dict映射[symbol],UpdateTime, UpdateMillisec, TradingDay,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice)
+                if 当前交易日<TradingDay:
+                    当前交易日=TradingDay
+
+                天勤.updata(单symbol_dict映射[symbol],UpdateTime, UpdateMillisec, 当前交易日,ActionDay,LastPrice, Volume, AskPrice1,AskVolume1, BidPrice1,BidVolume1,OpenInterest,PreSettlementPrice,PreClosePrice, PreOpenInterest,OpenPrice,HighestPrice,LowestPrice,Turnover,ClosePrice,SettlementPrice,UpperLimitPrice,LowerLimitPrice,BidPrice2,BidVolume2,AskPrice2,AskVolume2,BidPrice3,BidVolume3,AskPrice3,AskVolume3,BidPrice4,BidVolume4,AskPrice4,AskVolume4,BidPrice5,BidVolume5,AskPrice5,AskVolume5,AveragePrice)
 
                 #处理主连
                 if 单symbol_dict映射[symbol] in  订阅中的主连合约_反向:
