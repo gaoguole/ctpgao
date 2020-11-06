@@ -229,6 +229,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         }
         self.account.update(a)
         if self.init_start is None:
+            time.sleep(2)
             ReqQryInstrument(self)
     #持仓返回
     def OnRspQryInvestorPosition(self, pInvestorPosition:"CThostFtdcInvestorPositionField ",  pRspInfo:"CThostFtdcRspInfoField", nRequestID:"int",bIsLast: "bool"):
@@ -418,7 +419,9 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
     def OnRspQryInstrument(self,pInstrument:"CThostFtdcInstrumentField" ,  pRspInfo:"CThostFtdcRspInfoField", nRequestID:"int",bIsLast: "bool"):
         self.symbol[pInstrument.InstrumentID]=pInstrument.ExchangeID
         self.symbol_v[pInstrument.InstrumentID]=pInstrument.VolumeMultiple
+        #print(6666666)
         if bIsLast:
+            time.sleep(2)
             ReqQryInvestorPosition(self)
 
     def OnRtnOrder(self, pOrder: 'CThostFtdcOrderField') -> "void":
