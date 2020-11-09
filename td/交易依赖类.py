@@ -195,6 +195,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         pSettlementInfoConfirm.BrokerID=self.BrokerID
         pSettlementInfoConfirm.InvestorID=self.UserID
         #自动确认历史结算接口
+        time.sleep(1.2)
         self.tapi.ReqSettlementInfoConfirm(pSettlementInfoConfirm,0)
         print ("send ReqSettlementInfoConfirm ok")
     #确认历史结算接口
