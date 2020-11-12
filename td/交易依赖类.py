@@ -371,6 +371,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                         self.position[symbol]["PositionCost_short"]=pInvestorPosition.PositionCost
                 else:
                     if pInvestorPosition.PositionDate=="1":
+                        print()
                         self.position[symbol]["pos_short_today"]=pInvestorPosition.Position
                         self.position[symbol]["OpenCost_short_today"]=pInvestorPosition.OpenCost
                         self.position[symbol]["margin_short_today"]=pInvestorPosition.UseMargin
@@ -395,10 +396,10 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 #if self.init_start is None:
                 self.position[symbol]["open_price_long"]= self.position[symbol]["position_cost_long"] /long_c if long_c else 0
 
-
+                #print("OpenCost_short",self.position[symbol]["OpenCost_short"],self.position[symbol]["OpenCost_short_today"],self.position[symbol]["OpenCost_short_his"])
                 self.position[symbol]["position_cost_short"]=self.position[symbol]["OpenCost_short"]+self.position[symbol]["OpenCost_short_today"]+ self.position[symbol]["OpenCost_short_his"]
                 
-                short_c=self.position[symbol]["pos_short_today"]+self.position[symbol]["pos_short_his"] *self.symbol_v[symbol.split(".")[1]]
+                short_c=(self.position[symbol]["pos_short_today"]+self.position[symbol]["pos_short_his"])*self.symbol_v[symbol.split(".")[1]]
                 #if self.init_start is None:
                 self.position[symbol]["open_price_short"]=self.position[symbol]["position_cost_short"]/short_c if short_c else 0
 
