@@ -520,7 +520,7 @@ class  GaoApi(object):
         """
         task = self.loop.create_task(coro)
         if asyncio.Task.current_task(loop=self.loop) is None:
-            self.增加任务.add(task)
+            self.增加任务.append(task)
             task.add_done_callback(self._on_task_done)
         return task
     async def close_order(self,md5):
@@ -531,7 +531,8 @@ class  GaoApi(object):
         try:
             exception = task.exception()
             if exception:
-                self._exceptions.append(exception)
+                #self._exceptions.append(exception)
+                pass
         except asyncio.CancelledError:
             pass
         finally:
@@ -832,6 +833,47 @@ class  GaoApi(object):
                 return False
     def 判断对象是否改变(self,对象,对象名字):
         return self.is_changing(对象,对象名字)
+    
+    def 查询当日成交订单(self,品种名=None,保存csv地址="成交记录导出.csv"):
+        f=open(保存csv地址,'w')
+        f.write("成交时间,成交品种,下单方向,开平标志,委托价格,成交价格,成交手数,委托单号,成交单号\n")
+        #f.write()
+        if 品种名:
+            for x in self.trade:
+                b=self.get_trade(x)
+                c=self.get_order(b.order_id)
+                print(b)
+                if b["instrument_id"]==品种名.split(".")[1]:
+                    f.write(','.join([time_to_str(b.trade_date_time),
+                    b.instrument_id,
+                    b.direction,
+                    b.offset,
+                    str(c.limit_price),
+                    str(b.price),
+                    str(b.volume),
+                    b.order_id,
+                    b.trade_id
+                    ])+'\n'
+                    )
+
+        else:
+            for x in self.trade:
+                b=self.get_trade(x)
+                #获取成交的订单信息
+                c=self.get_order(b.order_id)
+                f.write(','.join([time_to_str(b.trade_date_time),
+                b.instrument_id,
+                b.direction,
+                b.offset,
+                str(c.limit_price),
+                str(b.price),
+                str(b.volume),
+                b.order_id,
+                b.trade_id
+                ])+'\n'
+                )
+        f.close()
+
 
 
 if __name__ == "__main__":

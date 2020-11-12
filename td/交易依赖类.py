@@ -7,6 +7,7 @@ import queue
 import numpy
 import whfunc
 from tqsdk.tafunc import time_to_str
+import re
 
 TThostFtdcVolumeConditionType={"1":"ANY","2":"MIN","3":"ALL"}
 TThostFtdcTimeConditionType={'1':"IOC" ,'2':"GFS",'3':"GFD",'4':"GTD",'5':"GTC",'6':"GFA"}
@@ -164,6 +165,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
             loginfield.Password=self.PassWord
             loginfield.UserProductInfo="python dll"
             # 请求账户登录
+            time.sleep(2)
             self.tapi.ReqUserLogin(loginfield,0)
             print ("send login ok")
 
@@ -180,6 +182,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         qryinfofield.InvestorID=self.UserID
         qryinfofield.TradingDay=pRspUserLogin.TradingDay
         #查询当然结算和历史结算接口
+        time.sleep(2)
         self.tapi.ReqQrySettlementInfo(qryinfofield,0)
         #print ("send ReqQrySettlementInfo ok")
         print("开始确认历史结算")
@@ -275,6 +278,8 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 "volume_long_frozen_his":0,
                 "volume_short_frozen_today":0,
                 "volume_short_frozen_his":0,
+                "OpenCost_long":0,
+                "OpenCost_short":0,
                 "OpenCost_long_today":0,
                 "OpenCost_long_his":0,
                 "PositionCost_long_today":0,
@@ -303,76 +308,100 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
             #self.position[symbol]["CloseProfit"]=pInvestorPosition.CloseProfit
             #买卖方向
             if pInvestorPosition.PosiDirection=="2":
-                if pInvestorPosition.TodayPosition>0:
-                    self.position[symbol]["pos_long_today"]=pInvestorPosition.TodayPosition
-                    self.position[symbol]["OpenCost_long_today"]=pInvestorPosition.OpenCost
-                    self.position[symbol]["margin_long_today"]=pInvestorPosition.UseMargin
-                    self.position[symbol]["volume_long_frozen_today"]=pInvestorPosition.LongFrozen
-                    self.position[symbol]["PositionCost_long_today"]=pInvestorPosition.PositionCost
+                # print(pInvestorPosition.InstrumentID,pInvestorPosition.Position,pInvestorPosition.TodayPosition,)
+                # print(pInvestorPosition.InstrumentID,"类型",pInvestorPosition.PositionDate,type(pInvestorPosition.PositionDate))
+                # 判断交易所是否是上交所和能源所
+                if self.symbol[pInvestorPosition.InstrumentID] not in ("SHFE","INE"):
 
+                    if pInvestorPosition.TodayPosition>0:
+                        self.position[symbol]["pos_long_today"]=pInvestorPosition.TodayPosition
+                        self.position[symbol]["OpenCost_long"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_long"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_long_frozen"]=pInvestorPosition.LongFrozen
+                        self.position[symbol]["PositionCost_long"]=pInvestorPosition.PositionCost
 
-                elif pInvestorPosition.Position>pInvestorPosition.TodayPosition:
-                    self.position[symbol]["pos_long_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
-                    self.position[symbol]["OpenCost_long_his"]=pInvestorPosition.OpenCost
-                    self.position[symbol]["margin_long_his"]=pInvestorPosition.UseMargin
-                    self.position[symbol]["volume_long_frozen_his"]=pInvestorPosition.LongFrozen
-                    self.position[symbol]["PositionCost_long_his"]=pInvestorPosition.PositionCost
-
-                elif pInvestorPosition.Position==pInvestorPosition.TodayPosition :
-                    self.position[symbol]["pos_long_today"]=0
-                    self.position[symbol]["OpenCost_long_today"]=0
-                    self.position[symbol]["margin_long_today"]=0
-                    self.position[symbol]["volume_long_frozen_today"]=0
-                    self.position[symbol]["PositionCost_long_today"]=0
-                    self.position[symbol]["pos_long_his"]=0
-                    self.position[symbol]["OpenCost_long_his"]=0
-                    self.position[symbol]["margin_long_his"]=0
-                    self.position[symbol]["volume_long_frozen_his"]=0
-                    self.position[symbol]["PositionCost_long_his"]=0
+                    if pInvestorPosition.Position>pInvestorPosition.TodayPosition:
+                        self.position[symbol]["pos_long_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
+                        self.position[symbol]["OpenCost_long"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_long"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_long_frozen"]=pInvestorPosition.LongFrozen
+                        self.position[symbol]["PositionCost_long"]=pInvestorPosition.PositionCost
+                else:
+                    if pInvestorPosition.PositionDate=="1":
+                        self.position[symbol]["pos_long_today"]=pInvestorPosition.Position
+                        self.position[symbol]["OpenCost_long_today"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_long_today"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_long_frozen_today"]=pInvestorPosition.LongFrozen
+                        self.position[symbol]["PositionCost_long_today"]=pInvestorPosition.PositionCost
+                    if pInvestorPosition.PositionDate=="2":
+                        self.position[symbol]["pos_long_today"]=pInvestorPosition.Position
+                        self.position[symbol]["OpenCost_long_his"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_long_his"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_long_frozen_his"]=pInvestorPosition.LongFrozen
+                        self.position[symbol]["PositionCost_long_his"]=pInvestorPosition.PositionCost
+                    
+                    # self.position[symbol]["pos_long_today"]=0
+                    # self.position[symbol]["OpenCost_long_today"]=0
+                    # self.position[symbol]["margin_long_today"]=0
+                    # self.position[symbol]["volume_long_frozen_today"]=0
+                    # self.position[symbol]["PositionCost_long_today"]=0
+                    # self.position[symbol]["pos_long_his"]=0
+                    # self.position[symbol]["OpenCost_long_his"]=0
+                    # self.position[symbol]["margin_long_his"]=0
+                    # self.position[symbol]["volume_long_frozen_his"]=0
+                    # self.position[symbol]["PositionCost_long_his"]=0
 
             else:
-                if pInvestorPosition.TodayPosition>0:
-                    self.position[symbol]["pos_short_today"]=pInvestorPosition.TodayPosition
-                    self.position[symbol]["OpenCost_short_today"]=pInvestorPosition.OpenCost
-                    self.position[symbol]["PositionCost_short_today"]=pInvestorPosition.PositionCost
-                    self.position[symbol]["margin_short_today"]=pInvestorPosition.UseMargin
-                    self.position[symbol]["volume_short_frozen_today"]=pInvestorPosition.ShortFrozen
+                # print(pInvestorPosition.InstrumentID,pInvestorPosition.Position,pInvestorPosition.TodayPosition,)
+                # print(pInvestorPosition.InstrumentID,"类型",pInvestorPosition.PositionDate)
+                if self.symbol[pInvestorPosition.InstrumentID] not in ("SHFE","INE"):
 
+                    if pInvestorPosition.TodayPosition>0:
+                        self.position[symbol]["pos_short_today"]=pInvestorPosition.TodayPosition
+                        self.position[symbol]["OpenCost_short"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_short"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_short_frozen"]=pInvestorPosition.ShortFrozen
+                        self.position[symbol]["PositionCost_short"]=pInvestorPosition.PositionCost
 
-                elif pInvestorPosition.Position-pInvestorPosition.TodayPosition>0:
-                    self.position[symbol]["pos_short_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
-                    self.position[symbol]["OpenCost_short_his"]=pInvestorPosition.OpenCost
-                    self.position[symbol]["PositionCost_short_his"]=pInvestorPosition.PositionCost
-                    self.position[symbol]["margin_short_his"]=pInvestorPosition.UseMargin
-                    self.position[symbol]["volume_short_frozen_his"]=pInvestorPosition.ShortFrozen
-
-
+                    if pInvestorPosition.Position>pInvestorPosition.TodayPosition:
+                        self.position[symbol]["pos_short_his"]=pInvestorPosition.Position-pInvestorPosition.TodayPosition
+                        self.position[symbol]["OpenCost_short"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_short"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_short_frozen"]=pInvestorPosition.ShortFrozen
+                        self.position[symbol]["PositionCost_short"]=pInvestorPosition.PositionCost
                 else:
-                    self.position[symbol]["pos_short_today"]=0
-                    self.position[symbol]["OpenCost_short_today"]=0
-                    self.position[symbol]["PositionCost_short_today"]=0
-                    self.position[symbol]["margin_short_today"]=0
-                    self.position[symbol]["volume_short_frozen_today"]=0
-                    self.position[symbol]["pos_short_his"]=0
-                    self.position[symbol]["OpenCost_short_his"]=0
-                    self.position[symbol]["PositionCost_short_his"]=0
-                    self.position[symbol]["margin_short_his"]=0
-                    self.position[symbol]["volume_short_frozen_his"]=0
+                    if pInvestorPosition.PositionDate=="1":
+                        self.position[symbol]["pos_short_today"]=pInvestorPosition.Position
+                        self.position[symbol]["OpenCost_short_today"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_short_today"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_short_frozen_today"]=pInvestorPosition.ShortFrozen
+                        self.position[symbol]["PositionCost_short_today"]=pInvestorPosition.PositionCost
+                    if pInvestorPosition.PositionDate=="2":
+                        self.position[symbol]["pos_short_today"]=pInvestorPosition.Position
+                        self.position[symbol]["OpenCost_short_his"]=pInvestorPosition.OpenCost
+                        self.position[symbol]["margin_short_his"]=pInvestorPosition.UseMargin
+                        self.position[symbol]["volume_short_frozen_his"]=pInvestorPosition.ShortFrozen
+                        self.position[symbol]["PositionCost_short_his"]=pInvestorPosition.PositionCost
 
         if bIsLast:
             for symbol in self.position:
                 #多空仓计算
                 self.position[symbol]["pos_long"]=self.position[symbol]["pos_long_today"]+self.position[symbol]["pos_long_his"]
                 self.position[symbol]["pos_short"]=self.position[symbol]["pos_short_today"]+self.position[symbol]["pos_short_his"]
-                #开仓成本价计算
+                #开仓成本价计算,
                 long_c=(self.position[symbol]["pos_long_today"]+self.position[symbol]["pos_long_his"] )*self.symbol_v[symbol.split(".")[1]]
-                self.position[symbol]["position_cost_long"]=self.position[symbol]["OpenCost_long_today"]+ self.position[symbol]["OpenCost_long_his"]
-                if self.init_start is None:
-                    self.position[symbol]["open_price_long"]= self.position[symbol]["position_cost_long"] /long_c if long_c else 0
-                self.position[symbol]["position_cost_long"]=self.position[symbol]["OpenCost_short_today"]+ self.position[symbol]["OpenCost_short_his"]
+                self.position[symbol]["position_cost_long"]=self.position[symbol]["OpenCost_long"]+self.position[symbol]["OpenCost_long_today"]+ self.position[symbol]["OpenCost_long_his"]
+                
+                #if self.init_start is None:
+                self.position[symbol]["open_price_long"]= self.position[symbol]["position_cost_long"] /long_c if long_c else 0
+
+
+                self.position[symbol]["position_cost_short"]=self.position[symbol]["OpenCost_short"]+self.position[symbol]["OpenCost_short_today"]+ self.position[symbol]["OpenCost_short_his"]
+                
                 short_c=self.position[symbol]["pos_short_today"]+self.position[symbol]["pos_short_his"] *self.symbol_v[symbol.split(".")[1]]
-                if self.init_start is None:
-                    self.position[symbol]["open_price_short"]=self.position[symbol]["position_cost_long"]/short_c if short_c else 0
+                #if self.init_start is None:
+                self.position[symbol]["open_price_short"]=self.position[symbol]["position_cost_short"]/short_c if short_c else 0
+
                 #持仓成本计算
                 long_c=(self.position[symbol]["pos_long_today"]+self.position[symbol]["pos_long_his"] )*self.symbol_v[symbol.split(".")[1]]
                 all_PositionCost=self.position[symbol]["PositionCost_long_today"]+ self.position[symbol]["PositionCost_long_his"]
@@ -381,18 +410,23 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 short_c=self.position[symbol]["pos_short_today"]+self.position[symbol]["pos_short_his"] *self.symbol_v[symbol.split(".")[1]]
                 self.position[symbol]["position_price_short"]=all_PositionCost/short_c if short_c else 0
                 #处理保证金
-                self.position[symbol]["margin_long"]=self.position[symbol]["margin_long_today"]+self.position[symbol]["margin_long_his"]
-                self.position[symbol]["margin_short"]=self.position[symbol]["margin_short_today"]+self.position[symbol]["margin_short_his"]
-                self.position[symbol]["margin"]=self.position[symbol]["margin_long"]+self.position[symbol]["margin_short"]
+                if self.symbol[pInvestorPosition.InstrumentID]  in ("SHFE","INE"):
+
+                    self.position[symbol]["margin_long"]=self.position[symbol]["margin_long_today"]+self.position[symbol]["margin_long_his"]
+                    self.position[symbol]["margin_short"]=self.position[symbol]["margin_short_today"]+self.position[symbol]["margin_short_his"]
+                    self.position[symbol]["margin"]=self.position[symbol]["margin_long"]+self.position[symbol]["margin_short"]
+                else:
+                    self.position[symbol]["margin"]=self.position[symbol]["margin_long"]+self.position[symbol]["margin_short"]
                 #处理冻结手数
-                self.position[symbol]["volume_long_frozen"]=self.position[symbol]["volume_long_frozen_today"]+self.position[symbol]["volume_long_frozen_his"]
-                self.position[symbol]["volume_short_frozen"]=self.position[symbol]["volume_short_frozen_today"]+self.position[symbol]["volume_short_frozen_his"]
+                if self.symbol[pInvestorPosition.InstrumentID] in ("SHFE","INE"):
+                    self.position[symbol]["volume_long_frozen"]=self.position[symbol]["volume_long_frozen_today"]+self.position[symbol]["volume_long_frozen_his"]
+                    self.position[symbol]["volume_short_frozen"]=self.position[symbol]["volume_short_frozen_today"]+self.position[symbol]["volume_short_frozen_his"]
                 #净持仓
                 self.position[symbol]["pos"]=self.position[symbol]["pos_long"]-self.position[symbol]["pos_short"]
                 # #平仓盈利处理
                 self.position[symbol]["CloseProfit"]=self.temp_closep[symbol]
                 self.temp_closep[symbol]=0
-
+            #print(self.position)
             if self.init_start is None:
             #更新订单的交易所 和 成交价格
                 for x in self.order:
@@ -400,15 +434,44 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     self.order[x]["exchange_id"]=self.symbol[ self.order[x]["instrument_id"]]
                     #更新委托单成交价格,和委托单相关成交字典
                     if x in self.order_trade:
-                        all_vol=self.order[x]["volume_orign"]
-                        temp_price_v_sum=0
-                        temp_v_sum=0
-                        for y in self.order_trade[x]:
-                            temp_price_v_sum+= self.trade[y]["price"]*self.trade[y]["volume"]
-                            temp_v_sum+=self.trade[y]["volume"]
-                            self.order[x]["trade_records"].update({self.trade[y]["trade_id"]:self.trade[y]})
-                        if all_vol==temp_v_sum :
-                            self.order[x]["trade_price"]=temp_price_v_sum/temp_v_sum
+                        if "&" not in self.order[x]["instrument_id"]:
+                            all_vol=self.order[x]["volume_orign"]
+                            temp_price_v_sum=0
+                            temp_v_sum=0
+                            for y in self.order_trade[x]:
+                                temp_price_v_sum+= self.trade[y]["price"]*self.trade[y]["volume"]
+                                temp_v_sum+=self.trade[y]["volume"]
+                                self.order[x]["trade_records"].append({self.trade[y]["trade_id"]:self.trade[y]})
+                            if all_vol==temp_v_sum :
+                                self.order[x]["trade_price"]=temp_price_v_sum/temp_v_sum
+                        else:
+                            #print("我怎么知道合成错了")
+                            品种1=re.findall(" ([a-zA-Z0-9]{1,})&",self.order[x]["instrument_id"])[0]
+                            品种2=re.findall("&([a-zA-Z0-9]{1,})",self.order[x]["instrument_id"])[0]
+                            品种1成交量=0
+                            品种2成交量=0
+                            品种1成交总成交额度=0
+                            品种2成交总成交额度=0
+                            #print(self.order[x]["instrument_id"])
+                            for y in self.order_trade[x]:
+                                #print(self.trade[y]["instrument_id"],品种1,品种2)
+                                if self.trade[y]["instrument_id"]==品种1:
+                                    品种1成交量+=self.trade[y]["volume"]
+                                    品种1成交总成交额度+=self.trade[y]["price"]*self.trade[y]["volume"]
+                                    self.order[x]["trade_records"].append({self.trade[y]["trade_id"]:self.trade[y]})
+                                if self.trade[y]["instrument_id"]==品种2:
+                                    品种2成交量+=self.trade[y]["volume"]
+                                    品种2成交总成交额度+=self.trade[y]["price"]*self.trade[y]["volume"]
+                            #print(品种1成交量+品种2成交量,self.order[x]["volume_orign"]*2)
+                            if (品种1成交量+品种2成交量)==self.order[x]["volume_orign"]*2:
+                                self.order[x]["trade_price"]=(品种1成交总成交额度-品种2成交总成交额度)/品种1成交量                  
+
+
+
+
+
+                            
+
                 for x in self.trade:
                     self.trade[x]["exchange_id"]=self.symbol[ self.trade[x]["instrument_id"]]
                 self.init_start=1
@@ -429,7 +492,10 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         #print("报单回报")
         #d={ x: getattr(pOrder, x) for x in dir(pOrder) if x[0]!="_"}
         print(time_to_str(time.time()),"报单成功")
+
+        #初始化的时候
         if  self.init_start is None:
+            #如果报单id没在报单列表
             if pOrder.OrderLocalID not in self.order:
                 self.order[pOrder.OrderLocalID]={
                     "order_id":pOrder.OrderLocalID,
@@ -448,10 +514,10 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     "CTP_status": TThostFtdcOrderStatusType[pOrder.OrderStatus],
                     "status":    "ALIVE"  if pOrder.OrderStatus in ('1','3','a','b') else "FINISHED",
                     "trade_price":numpy.nan,
-                    "trade_records":{}
+                    "trade_records":[]
                 }
             else:
-                
+            #如果报单id在报单列表
                 self.order[pOrder.OrderLocalID].update({
                     "volume_left":pOrder.VolumeTotal,
                     "limit_price":pOrder.LimitPrice,
@@ -464,6 +530,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
 
 
         else:
+            #如果报单id 没在报单列表 并且 报单id没在缓存md5中
             if pOrder.OrderLocalID not in self.order and pOrder.OrderLocalID not in self.Localid_md5:
                 if not self.temp_id:
                     md5=pOrder.OrderLocalID
@@ -490,7 +557,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                     "CTP_status": TThostFtdcOrderStatusType[pOrder.OrderStatus],
                     "status":    "ALIVE"  if pOrder.OrderStatus in ('1','3','a','b') else "FINISHED",
                     "trade_price":numpy.nan,
-                    "trade_records":{}
+                    "trade_records":[]
                 }
             else:
                 if pOrder.OrderLocalID in self.Localid_md5 :
@@ -534,7 +601,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
             "CTP_status": pRspInfo.ErrorMsg,
             "status":   "FINISHED",
             "trade_price":numpy.nan,
-            "trade_records":{}
+            "trade_records":[]
         }
         self.queue.put({"user":self.UserID,"order":{md5:self.order[md5]}})
     def OnRtnInstrumentStatus(self,pInstrumentStatus :"CThostFtdcInstrumentStatusField"):
@@ -543,6 +610,8 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
     def OnRtnTrade(self,pTrade:"CThostFtdcTradeField"):
         d={ x: getattr(pTrade, x) for x in dir(pTrade) if x[0]!="_"}
         print(time_to_str(time.time()),"交易成功")
+        #print(d)
+
         if pTrade.OrderLocalID in self.Localid_md5:
             md5=self.Localid_md5[pTrade.OrderLocalID]
         else:
@@ -553,6 +622,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         else:
             self.order_trade[md5].append(pTrade.TradeID)
         if  self.init_start is None:
+            #print(md5,pTrade.InstrumentID)
             self.trade[pTrade.TradeID]={
                 "order_id":md5,
                 "trade_id":pTrade.TradeID,
@@ -577,20 +647,48 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                 "volume":pTrade.Volume,
                 "trade_date_time": time.mktime(time.strptime(pTrade.TradeDate +pTrade.TradeTime,'%Y%m%d%H:%M:%S'))*1e9,
             }
-            self.order[md5]["trade_records"].update({self.trade[pTrade.TradeID]["trade_id"]:self.trade[pTrade.TradeID]})
+            self.order[md5]["trade_records"].append({self.trade[pTrade.TradeID]["trade_id"]:self.trade[pTrade.TradeID]})
             #判断是否需要更新订单平均成交价格
             all_v=self.order[md5]["volume_orign"]
-            temp_v=0
-            temp_v_p=0
-            for x in self.order_trade[md5]:
-                temp_v+=self.trade[x]["volume"]
-                temp_v_p+=self.trade[x]["price"]*self.trade[x]["volume"]
+            if "&" not in self.order[md5]["instrument_id"]:
+                temp_v=0
+                temp_v_p=0
+                for x in self.order_trade[md5]:
+                    temp_v+=self.trade[x]["volume"]
+                    temp_v_p+=self.trade[x]["price"]*self.trade[x]["volume"]
 
-            if temp_v==all_v:
-                self.order[md5]["trade_price"]=temp_v_p/temp_v
+                if temp_v==all_v:
+                    self.order[md5]["trade_price"]=temp_v_p/temp_v
+            else:
+                品种1=re.findall(" ([a-zA-Z0-9]{1,})&",self.order[md5]["instrument_id"])[0]
+                品种2=re.findall("&([a-zA-Z0-9]{1,})",self.order[md5]["instrument_id"])[0]
+                品种1成交量=0
+                品种2成交量=0
+                品种1成交总成交额度=0
+                品种2成交总成交额度=0
+                #print(self.order[md5]["instrument_id"])
+                for y in self.order_trade[md5]:
+                    #print(self.trade[y]["instrument_id"],品种1,品种2)
+                    if self.trade[y]["instrument_id"]==品种1:
+                        品种1成交量+=self.trade[y]["volume"]
+                        品种1成交总成交额度+=self.trade[y]["price"]*self.trade[y]["volume"]
+                        self.order[md5]["trade_records"].append({self.trade[y]["trade_id"]:self.trade[y]})
+                    if self.trade[y]["instrument_id"]==品种2:
+                        品种2成交量+=self.trade[y]["volume"]
+                        品种2成交总成交额度+=self.trade[y]["price"]*self.trade[y]["volume"]
+                #print(品种1成交量+品种2成交量,self.order[x]["volume_orign"]*2)
+                # print(品种1成交总成交额度,品种2成交总成交额度,品种1成交量,"量")
+                # print(6)
+                # print(self.order[md5]["volume_orign"])
+                if 品种1成交量+品种2成交量==self.order[md5]["volume_orign"]*2:
+                    print(666)
+                    self.order[md5]["trade_price"]=(品种1成交总成交额度-品种2成交总成交额度)/品种1成交量
             #维护实时持仓
+            print(66666666)
+            print(self.symbol[pTrade.InstrumentID],pTrade.InstrumentID)
             symbol=self.symbol[pTrade.InstrumentID]+"."+pTrade.InstrumentID
             #如果品种原来没在,就是新开
+            print(667)
             if symbol not in self.position:
                 self.position[symbol]={"exchange_id":self.symbol[pTrade.InstrumentID],
                 "instrument_id":pTrade.InstrumentID,
@@ -744,7 +842,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
                                 "position_price_long": self.position[symbol]["position_price_long"]    if self.position[symbol]["pos_long"] -pTrade.Volume>0  else 0,
                                 }
                             self.position[symbol].update(d)
-
+            print(668)
             self.queue.put({"user":self.UserID,"position":{symbol:self.position[symbol]},"order":self.order,"trade":self.trade})
 
     def OnRspOrderAction( self,pInputOrderAction:"CThostFtdcInputOrderActionField",  pRspInfo:"CThostFtdcRspInfoField", nRequestID:"nRequestID",  bIsLast:"bool"):
@@ -753,6 +851,7 @@ class CTradeSpi(api.CThostFtdcTraderSpi):
         print(d)
         print(d2)
     def start_load(self):
+        time.sleep(2)
         ReqQryTradingAccount(self)
 
 
